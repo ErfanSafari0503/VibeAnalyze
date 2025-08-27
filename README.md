@@ -4,7 +4,7 @@
   <p align="center">
     An AI-powered platform to gain deep, actionable insights from the comments of social media posts.
     <br />
-    <a href="https://vibeanalyze.erfansafari.me/"><strong>Explore the Live Demo »</strong></a>
+    <a href="https://vibeanalyze.erfansafari.me/" target="_blank"><strong>Explore the Live Demo »</strong></a>
   </p>
 </div>
 
