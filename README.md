@@ -1,7 +1,7 @@
 # VibeAnalyze
 
 <div align="center">
-  <img src="./Logo/logo.png" alt="VibeAnalyze Logo" width="150px" />
+  <img src="./Logo/logo.png" alt="VibeAnalyze Logo" width="300px" />
   <h1 align="center">VibeAnalyze</h1>
   <p align="center">
     An AI-powered platform to gain deep, actionable insights from the comments of social media posts.
