@@ -1,4 +1,4 @@
-# VibeAnalyze Frontend
+# VibeAnalyze
 
 <div align="center">
   <img src="./Logo/logo.png" alt="VibeAnalyze Logo" width="150px" />
