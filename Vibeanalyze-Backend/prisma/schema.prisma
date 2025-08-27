@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlatformType {
+  INSTAGRAM
+  TELEGRAM
+}
+
+enum SentimentType {
+  VERY_POSITIVE
+  POSITIVE
+  SLIGHTLY_POSITIVE
+  NEUTRAL
+  SLIGHTLY_NEGATIVE
+  NEGATIVE
+  VERY_NEGATIVE
+  MIXED
+  SARCASTIC
+  IRONIC
+}
+
+enum ConfidenceLevel {
+  VERY_LOW // 0-20%
+  LOW // 20-40%
+  MEDIUM // 40-60%
+  HIGH // 60-80%
+  VERY_HIGH // 80-95%
+  CERTAIN // 95-100%
+}
+
+enum AnalysisStatus {
+  PENDING
+  COLLECTING_DATA
+  ANALYZING_DATA
+  COMPLETED
+  FAILED
+  CANCELLED
+  PAUSED
+}
+
+enum TelegramAccountStatus {
+  ACTIVE
+  EXPIRED
+  ERROR
+  DELETED
+}
+
+enum InstagramSelectorType {
+  META_OG_IMAGE
+  META_OG_DESCRIPTION
+  USERNAME
+
+  LOGIN_FORM
+  SUBMIT_BUTTON
+  USERNAME_INPUT
+  PASSWORD_INPUT
+}
+
+enum InstagramSelectorStatus {
+  ACTIVE
+  ERROR
+  DELETED
+}
+
+model Post {
+  id         String       @id @default(cuid())
+  url        String       @db.VarChar(500)
+  platform   PlatformType
+  platformId String?      @map("platform_id") // Original post ID from platform
+
+  // Content
+  title         String? @db.VarChar(500)
+  content       String? @db.Text
+  thumbnailPath String? @map("thumbnail_path") @db.Text
+
+  // Author info
+  authorPlatformId     String?  @map("author_platform_id")
+  authorUsername       String?  @map("author_username") @db.VarChar(100)
+  authorFullName       String?  @map("author_full_name") @db.VarChar(200)
+  authorAvatarPath     String?  @map("author_avatar_path") @db.Text
+  authorFollowersCount Int?     @map("author_followers_count")
+  authorVerified       Boolean? @default(false) @map("author_verified")
+
+  // Engagement metrics
+  likesCount    Int? @default(0) @map("likes_count")
+  commentsCount Int? @default(0) @map("comments_count")
+  sharesCount   Int? @default(0) @map("shares_count")
+  viewsCount    Int? @default(0) @map("views_count")
+
+  // Post metadata
+  reactions   Json?     @default("{}") // Format: {"😍": 5, "👍": 3, "❤️": 2}
+  publishedAt DateTime? @map("published_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  analyses Analysis[]
+  comments Comment[]
+
+  @@index([platform])
+  @@index([platformId])
+  @@index([authorPlatformId])
+  @@index([authorUsername])
+  @@index([publishedAt])
+  @@map("posts")
+}
+
+model Comment {
+  id     String @id @default(cuid())
+  postId String @map("post_id")
+
+  // Content
+  platformId       String?  @map("platform_id")
+  content          String?  @db.Text
+  thumbnailPath    String?  @map("thumbnail_path")
+  language         String?  @db.VarChar(10)
+  isReply          Boolean? @default(false) @map("is_reply")
+  parentPlatformId String?  @map("parent_platform_id")
+
+  // Author info
+  authorPlatformId     String?  @map("author_platform_id")
+  authorUsername       String?  @map("author_username") @db.VarChar(255)
+  authorFullName       String?  @map("author_full_name") @db.VarChar(200)
+  authorAvatarPath     String?  @map("author_avatar_path") @db.Text
+  authorFollowersCount Int?     @map("author_followers_count")
+  authorVerified       Boolean? @default(false) @map("author_verified")
+
+  // Engagement metrics
+  likesCount   Int? @default(0) @map("likes_count")
+  repliesCount Int? @default(0) @map("replies_count")
+  sharesCount  Int? @default(0) @map("shares_count")
+  viewsCount   Int? @default(0) @map("views_count")
+
+  // Sentiment Analysis Results
+  sentimentType   SentimentType?   @map("sentiment_type")
+  sentimentScore  Float?           @map("sentiment_score") @db.DoublePrecision // -1 to 1
+  confidenceLevel ConfidenceLevel? @map("confidence_level")
+
+  // Detailed Analytics
+  emotionScores Json?    @map("emotion_scores") // {joy: 0.8, anger: 0.1, ...}
+  topics        String[] @default([])
+  keywords      String[] @default([])
+  reactions     Json?    @default("{}") // Format: {"😍": 5, "👍": 3, "❤️": 2}
+
+  // Legacy fields (keeping for backward compatibility)
+  rating                Int?     @db.SmallInt
+  satisfactionScore     Int?     @map("satisfaction_score") @db.SmallInt
+  liked                 Boolean?
+  tone                  String?  @db.VarChar(50)
+  overallSentimentScore Float?   @map("overall_sentiment_score") @db.DoublePrecision
+  positiveSentences     Json?    @map("positive_sentences")
+  additionalInsights    Json?    @map("additional_insights")
+  personalityTraits     Json?    @map("personality_traits")
+
+  // Metadata
+  publishedAt DateTime? @map("published_at")
+  processedAt DateTime? @map("processed_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([platformId])
+  @@index([postId])
+  @@index([authorPlatformId])
+  @@index([authorUsername])
+  @@index([publishedAt])
+  @@map("comments")
+}
+
+model Analysis {
+  id                String         @id @default(cuid())
+  postId            String         @map("post_id")
+  status            AnalysisStatus @default(PENDING)
+  statusDescription String?        @map("status_description") @db.Text
+  startedAt         DateTime?      @map("started_at")
+  finishedAt        DateTime?      @map("finished_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  post              Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("analyses")
+}
+
+model InstagramSelector {
+  id          String                  @id @default(cuid())
+  type        InstagramSelectorType
+  selector    String                  @db.Text
+  description String?                 @db.Text
+  status      InstagramSelectorStatus @default(ACTIVE)
+
+  // Usage tracking
+  usageCount   Int @default(0) @map("usage_count")
+  successCount Int @default(0) @map("success_count")
+  failureCount Int @default(0) @map("failure_count")
+
+  // Performance metrics
+  lastTestedAt  DateTime? @map("last_tested_at")
+  lastSuccessAt DateTime? @map("last_success_at")
+  lastFailureAt DateTime? @map("last_failure_at")
+
+  // Timestamps
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([type])
+  @@index([status])
+  @@index([lastTestedAt])
+  @@map("instagram_selectors")
+}
+
+model TelegramAccount {
+  id         String                @id @default(cuid())
+  platformId String                @unique @map("platform_id") @db.VarChar(50)
+  phone      String                @db.VarChar(20)
+  firstName  String                @map("first_name") @db.VarChar(100)
+  lastName   String?               @map("last_name") @db.VarChar(100)
+  username   String?               @db.VarChar(100)
+  session    String                @db.Text
+  password   String?               @db.VarChar(255)
+  status     TelegramAccountStatus @default(ACTIVE)
+  updatedAt  DateTime              @updatedAt @map("updated_at")
+  createdAt  DateTime              @default(now()) @map("created_at")
+
+  @@index([platformId])
+  @@index([phone])
+  @@index([status])
+  @@map("telegram_accounts")
+}

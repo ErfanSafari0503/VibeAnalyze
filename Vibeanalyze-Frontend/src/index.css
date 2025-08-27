@@ -1,0 +1,99 @@
+/**
+ * @file index.css
+ * @description This is the main stylesheet for the application.
+ * It imports Google Fonts, includes Tailwind CSS's base styles, components, and utilities,
+ * and defines custom global styles, component classes, and animations.
+ */
+
+/* ===================================================================
+ * Font Imports
+ * =================================================================== */
+/* Imports the 'Inter' and 'DM Sans' font families from Google Fonts. */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+/* ===================================================================
+ * Tailwind CSS Directive
+ * =================================================================== */
+@import "tailwindcss";
+
+/* ===================================================================
+ * Define custom fonts with the new @theme directive
+ * =================================================================== */
+@theme {
+  --font-inter: "Inter", sans-serif;
+  --font-dm-sans: "DM Sans", sans-serif;
+}
+
+/* ===================================================================
+ * Base Layer
+ * =================================================================== */
+/* Defines base styles for the entire application. */
+@layer base {
+  body {
+    /* Sets a default background gradient, font, color, and enables anti-aliasing for smoother text. */
+    @apply bg-gradient-to-br from-gray-50 via-white to-gray-100 font-inter text-gray-800 antialiased;
+  }
+}
+
+/* ===================================================================
+ * Components Layer
+ * =================================================================== */
+/* Defines reusable, multi-utility component classes. */
+@layer components {
+  /* A reusable container class to constrain content width and provide consistent padding. */
+  .container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 md:px-8;
+  }
+
+  /* Shared heading styles for consistent typography. */
+  .h1-heading {
+    @apply mb-4 text-3xl font-bold tracking-tight text-gray-800 sm:mb-6 sm:text-4xl md:text-5xl md:leading-tight lg:text-6xl xl:text-7xl;
+  }
+
+  .h2-heading {
+    @apply mb-8 text-center text-2xl font-bold tracking-tight text-gray-800 sm:mb-10 sm:text-3xl md:mb-14 md:text-4xl lg:text-5xl xl:text-6xl;
+  }
+}
+
+/* ===================================================================
+ * Utilities Layer
+ * =================================================================== */
+/* Defines custom, low-level utility classes and animations. */
+@layer utilities {
+  /* Custom keyframe animations for the Loading spinner component. */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes spin-medium-reverse {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
+  }
+  @keyframes spin-fast {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes pulse-custom {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.4);
+      opacity: 1;
+    }
+  }
+}
