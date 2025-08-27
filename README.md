@@ -1,5 +1,3 @@
-# VibeAnalyze
-
 <div align="center">
   <img src="./Logo/logo.png" alt="VibeAnalyze Logo" width="300px" />
   <h1 align="center">VibeAnalyze</h1>
